@@ -69,6 +69,10 @@ class User
     def authored_replies
         Reply.find_by_user_id(self.id)
     end
+
+    def followed_questions 
+        QuestionFollow.followed_questions_for_user_id(self.id)
+    end
 end
 
 class Question
@@ -118,6 +122,17 @@ class Question
         self.id = QuestionsDBConnections.instance.last_insert_row_id
     end
 
+    def author 
+        User.find_by_id(self.author_id)
+    end
+
+    def replies
+        Reply.find_by_question_id(self.id)
+    end
+
+    def followers 
+        QuestionFollow.followers_for_question_id(self.id)
+    end
 end
 
 class Reply
@@ -184,7 +199,62 @@ class Reply
         SQL
         self.id = QuestionsDBConnections.instance.last_insert_row_id
     end
+
+    def author
+        User.find_by_id(self.replier_id)
+    end
+
+    def question
+        Question.find_by_id(self.original_q_id)
+    end
+
+    def parent_reply
+        Reply.find_by_id(self.reply_id)
+    end
+
+    def child_replies
+        children = QuestionsDBConnections.instance.execute(<<-SQL, self.id)
+        SELECT
+            *
+        FROM 
+            replies
+        WHERE
+            reply_id = ?
+        SQL
+        children.map {|r| Reply.new(r)}
+    end
 end
+
+class QuestionFollow
+    def self.followers_for_question_id(question_id)
+        users = QuestionsDBConnections.instance.execute(<<-SQL, question_id)
+            SELECT
+                users.id, users.firstname, users.lastname
+            FROM
+                question_follows
+                JOIN
+                    users ON question_follows.user_id = users.id
+            WHERE
+                question_id = ?
+        SQL
+        users.map { |u| User.new(u) }
+    end
+
+    def self.followed_questions_for_user_id(user_id)
+        questions = QuestionsDBConnections.instance.execute(<<-SQL, user_id)
+        SELECT
+            questions.id, questions.title, questions.body, questions.author_id
+        FROM
+            question_follows
+            JOIN
+                questions ON question_follows.question_id = questions.id
+        WHERE
+            user_id = ?
+        SQL
+        questions.map { |q| Question.new(q) }
+    end
+end
+
 
 
 

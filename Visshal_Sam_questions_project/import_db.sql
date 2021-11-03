@@ -65,13 +65,29 @@ INSERT INTO questions(title, body, author_id)
 VALUES ('How hard is SQL', 'It seems pretty hard', 
     (SELECT id FROM users WHERE firstname = 'Sam'));
 
+INSERT INTO questions(title, body, author_id)
+VALUES ('How easy is join', 'Not too bad', 
+    (SELECT id FROM users WHERE firstname = 'Sam'));
+
 INSERT INTO question_follows(question_id, user_id)
 VALUES ((SELECT id FROM questions WHERE title = 'How does this Work'),
 (SELECT id FROM users WHERE firstname = 'Sam'));
 
 INSERT INTO question_follows(question_id, user_id)
+VALUES ((SELECT id FROM questions WHERE title = 'How does this Work'),
+(SELECT id FROM users WHERE firstname = 'Visshal'));
+
+INSERT INTO question_follows(question_id, user_id)
 VALUES ((SELECT id FROM questions WHERE title = 'How hard is SQL'),
 (SELECT id FROM users WHERE firstname = 'Visshal'));
+
+INSERT INTO question_follows(question_id, user_id)
+VALUES ((SELECT id FROM questions WHERE title = 'How easy is join'),
+(SELECT id FROM users WHERE firstname = 'Visshal'));
+
+INSERT INTO question_follows(question_id, user_id)
+VALUES ((SELECT id FROM questions WHERE title = 'How easy is join'),
+(SELECT id FROM users WHERE firstname = 'Sam'));
 
 INSERT INTO question_likes(question_id, user_id)
 VALUES ((SELECT id FROM questions WHERE title = 'How does this Work'),
@@ -91,6 +107,7 @@ VALUES ((SELECT id FROM questions WHERE title = 'How hard is SQL'),
     (SELECT id FROM replies WHERE body = 'I dont think so'),
     (SELECT id FROM users WHERE firstname = 'Sam'),
     'I dont think so either');
+
 
 
 

@@ -105,6 +105,11 @@ class Question
         SQL
         question.map {|q| Question.new(q)}
     end
+
+    def self.most_followed(n)
+        QuestionFollow.most_followed_questions(n)
+    end
+
     attr_accessor :title, :body, :author_id, :id
 
     def initialize(options)
@@ -133,6 +138,7 @@ class Question
     def followers 
         QuestionFollow.followers_for_question_id(self.id)
     end
+
 end
 
 class Reply
@@ -252,6 +258,22 @@ class QuestionFollow
             user_id = ?
         SQL
         questions.map { |q| Question.new(q) }
+    end
+
+    def self.most_followed_questions(n)
+        questions = QuestionsDBConnections.instance.execute(<<-SQL, n)
+        SELECT
+            questions.id, questions.title, questions.body, questions.author_id
+        FROM
+            question_follows 
+            JOIN questions ON question_follows.question_id = questions.id
+        GROUP BY
+            question_id
+        ORDER BY
+            COUNT(user_id) DESC
+        LIMIT ?
+        SQL
+        questions.map {|q| Question.new(q)}
     end
 end
 

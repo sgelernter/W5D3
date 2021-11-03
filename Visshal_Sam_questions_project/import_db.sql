@@ -62,6 +62,10 @@ VALUES ('How does this Work', 'No really, How does this work?',
     (SELECT id FROM users WHERE firstname = 'Visshal'));
 
 INSERT INTO questions(title, body, author_id)
+VALUES ('Will this one work?', 'It''s a new question', 
+    (SELECT id FROM users WHERE firstname = 'Visshal'));
+
+INSERT INTO questions(title, body, author_id)
 VALUES ('How hard is SQL', 'It seems pretty hard', 
     (SELECT id FROM users WHERE firstname = 'Sam'));
 
@@ -92,6 +96,10 @@ VALUES ((SELECT id FROM questions WHERE title = 'How easy is join'),
 INSERT INTO question_likes(question_id, user_id)
 VALUES ((SELECT id FROM questions WHERE title = 'How does this Work'),
 (SELECT id FROM users WHERE firstname = 'Sam'));
+
+INSERT INTO question_likes(question_id, user_id)
+VALUES ((SELECT id FROM questions WHERE title = 'How does this Work'),
+(SELECT id FROM users WHERE firstname = 'Visshal'));
 
 INSERT INTO question_likes(question_id, user_id)
 VALUES ((SELECT id FROM questions WHERE title = 'How hard is SQL'),

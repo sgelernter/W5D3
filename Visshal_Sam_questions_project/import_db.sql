@@ -88,7 +88,7 @@ VALUES ((SELECT id FROM questions WHERE title = 'How hard is SQL'),
 
 INSERT INTO replies(original_q_id, reply_id, replier_id, body)
 VALUES ((SELECT id FROM questions WHERE title = 'How hard is SQL'),
-    (SELECT id FROM replies WHERE body = 'I dont think so')
+    (SELECT id FROM replies WHERE body = 'I dont think so'),
     (SELECT id FROM users WHERE firstname = 'Sam'),
     'I dont think so either');
 

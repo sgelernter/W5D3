@@ -52,7 +52,6 @@ class User
     end
 
     def insert
-        raise "user already exists" if self.id
         QuestionsDBConnections.instance.execute(<<-SQL, self.firstname, self.lastname)
         INSERT INTO 
         users(firstname, lastname)
@@ -60,6 +59,25 @@ class User
         (?, ?)
         SQL
         self.id = QuestionsDBConnections.instance.last_insert_row_id
+    end
+
+    def update
+        QuestionsDBConnections.instance.execute(<<-SQL, self.firstname, self.lastname, self.id)
+        UPDATE 
+            users
+        SET
+            firstname = ?, lastname=?
+        WHERE
+            id = ?
+        SQL
+    end
+
+    def save
+        if self.id
+            self.update
+        else
+            self.insert
+        end
     end
 
     def avg_karma
@@ -138,7 +156,6 @@ class Question
     end
 
     def insert
-        raise "that row already exists" if self.id
         QuestionsDBConnections.instance.execute(<<-SQL, self.title, self.body, self.author_id)
         INSERT INTO 
         questions(title, body, author_id)
@@ -146,6 +163,25 @@ class Question
         (?, ?, ?)
         SQL
         self.id = QuestionsDBConnections.instance.last_insert_row_id
+    end
+
+    def update
+        QuestionsDBConnections.instance.execute(<<-SQL, self.title, self.body, self.author_id, self.id)
+        UPDATE 
+            questions
+        SET
+            title = ?, body = ?, author_id = ?
+        WHERE
+            id = ?
+        SQL
+    end
+
+    def save
+        if self.id
+            self.update
+        else
+            self.insert
+        end
     end
 
     def likers 
@@ -233,6 +269,25 @@ class Reply
         (?, ?, ?, ?)
         SQL
         self.id = QuestionsDBConnections.instance.last_insert_row_id
+    end
+    
+    def update
+        QuestionsDBConnections.instance.execute(<<-SQL, self.original_q_id, self.reply_id, self.replier_id, self.body, self.id)
+        UPDATE 
+            replies
+        SET
+            original_q_id = ?, reply_id = ?, replier_id = ?, body = ?
+        WHERE
+            id = ?
+        SQL
+    end
+
+    def save
+        if self.id
+            self.update
+        else
+            self.insert
+        end
     end
 
     def author
@@ -366,7 +421,6 @@ class QuestionLike
         questions.map {|q| Question.new(q)}
     end
 end
-
 
 
 

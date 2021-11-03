@@ -1,5 +1,6 @@
 require "sqlite3"
 require "singleton"
+require_relative "./modelbase.rb"
 
 class QuestionsDBConnections < SQLite3::Database
     include Singleton 
@@ -12,25 +13,13 @@ class QuestionsDBConnections < SQLite3::Database
 
 end
 
-class User
+class User < ModelBase
 
     attr_accessor :firstname, :lastname, :id
 
     def self.all
         data = QuestionsDBConnections.instance.execute("SELECT * FROM users")
         data.map {|datum| [User.new(datum)]}
-    end
-
-    def self.find_by_id(id)
-        options = QuestionsDBConnections.instance.execute(<<-SQL, id)
-            SELECT
-                *
-            FROM
-                users
-            WHERE
-                id = ?
-            SQL
-        User.new(options.first)
     end
 
      def self.find_by_name(f_name, l_name)
@@ -49,6 +38,10 @@ class User
 
     def initialize(options)
         @id, @firstname, @lastname = options['id'], options['firstname'], options['lastname']
+    end
+
+    def instance_variables
+        {firstname: @firstname, lastname: @lastname}
     end
 
     def insert
@@ -115,18 +108,6 @@ class Question
     def self.all
         data = QuestionsDBConnections.instance.execute("SELECT * FROM questions")
         data.map {|datum| [Question.new(datum)]}
-    end
-
-    def self.find_by_id(id)
-        options = QuestionsDBConnections.instance.execute(<<-SQL, id)
-            SELECT
-                *
-            FROM
-                questions
-            WHERE
-                id = ?
-            SQL
-        Question.new(options.first)
     end
 
     def self.find_by_author_id(author_id)
@@ -208,19 +189,7 @@ end
 
 class Reply
 
-    attr_accessor :original_q_id, :reply_id, :replier_id, :body, :id
-
-    def self.find_by_id(id)
-        options = QuestionsDBConnections.instance.execute(<<-SQL, id)
-            SELECT
-                *
-            FROM
-                replies
-            WHERE
-                id = ?
-            SQL
-        Reply.new(options.first)
-    end
+    attr_accessor :id, :original_q_id, :reply_id, :replier_id, :body
 
     def self.all
         data = QuestionsDBConnections.instance.execute("SELECT * FROM replies")
@@ -422,5 +391,6 @@ class QuestionLike
     end
 end
 
-
-
+# user = User.new("id" => nil, "firstname" => "Zack", "lastname" => "Garnett")
+# user.insert
+# p User.all

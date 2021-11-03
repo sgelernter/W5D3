@@ -33,6 +33,19 @@ class User
         User.new(options.first)
     end
 
+     def self.find_by_name(f_name, l_name)
+        options = QuestionsDBConnections.instance.execute(<<-SQL, f_name, l_name)
+            SELECT
+                *
+            FROM
+                users
+            WHERE
+                firstname = ? AND lastname = ?
+            SQL
+            # implement for multiple same names
+        User.new(options.first)
+    end
+
 
     def initialize(options)
         @id, @firstname, @lastname = options['id'], options['firstname'], options['lastname']
@@ -48,6 +61,14 @@ class User
         SQL
         self.id = QuestionsDBConnections.instance.last_insert_row_id
     end
+
+    def authored_questions
+        Question.find_by_author_id(self.id)
+    end
+
+    def authored_replies
+        Reply.find_by_user_id(self.id)
+    end
 end
 
 class Question
@@ -57,6 +78,29 @@ class Question
         data.map {|datum| [Question.new(datum)]}
     end
 
+    def self.find_by_id(id)
+        options = QuestionsDBConnections.instance.execute(<<-SQL, id)
+            SELECT
+                *
+            FROM
+                questions
+            WHERE
+                id = ?
+            SQL
+        Question.new(options.first)
+    end
+
+    def self.find_by_author_id(author_id)
+        question = QuestionsDBConnections.instance.execute(<<-SQL, author_id)
+        SELECT
+            *
+        FROM 
+            questions
+        WHERE
+            author_id = ?
+        SQL
+        question.map {|q| Question.new(q)}
+    end
     attr_accessor :title, :body, :author_id, :id
 
     def initialize(options)
@@ -73,34 +117,6 @@ class Question
         SQL
         self.id = QuestionsDBConnections.instance.last_insert_row_id
     end
-
-    def self.find_by_id(id)
-        options = QuestionsDBConnections.instance.execute(<<-SQL, id)
-            SELECT
-                *
-            FROM
-                questions
-            WHERE
-                id = ?
-            SQL
-        Question.new(options.first)
-    end
-
-
-    # def self.find_by_author_id(author_id)
-
-    #     question = QuestionsDBConnections.instance.execute(<<-SQL, author_id)
-    #     SELECT
-    #         *
-    #     FROM 
-    #         questions
-    #     WHERE
-    #         author_id = ?
-    #     SQL
-
-    #     return Question.new(question.first) 
-    # end
-
 
 end
 
@@ -123,6 +139,31 @@ class Reply
     def self.all
         data = QuestionsDBConnections.instance.execute("SELECT * FROM replies")
         data.map {|datum| [Reply.new(datum)]}
+    end
+
+    def self.find_by_user_id(user_id)
+        reply = QuestionsDBConnections.instance.execute(<<-SQL, user_id)
+        SELECT
+            *
+        FROM 
+            replies
+        WHERE
+            replier_id = ?
+        SQL
+        reply.map {|r| Reply.new(r)}
+    end
+
+    def self.find_by_question_id(question_id)
+        reply = QuestionsDBConnections.instance.execute(<<-SQL, question_id)
+        SELECT
+            *
+        FROM 
+            replies
+        WHERE
+            original_q_id = ?
+        SQL
+        #implement order by for threads
+        reply.map {|r| Reply.new(r)}
     end
 
     def initialize(options)
